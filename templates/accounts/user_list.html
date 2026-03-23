@@ -1,0 +1,269 @@
+{% extends "base.html" %}
+
+{% block title %}Role Modulator — PCA Portal{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="page-header d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h3 mb-1"><i class="bi bi-person-gear me-2 text-primary"></i>Role Modulator</h1>
+      <p class="text-muted mb-0">System Operation & User Ranks</p>
+    </div>
+    <a href="{% url 'accounts:user_create' %}" class="btn btn-primary shadow-sm" style="border-radius: 8px;">
+      <i class="bi bi-person-plus-fill me-1"></i> Add Personnel
+    </a>
+  </div>
+
+  <!-- Role Overview Cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-4">
+      <div class="card stat-card shadow-sm border-0 h-100"
+        style="background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <h6 class="text-warning mb-1" style="color: #ed8936 !important;">Division Chiefs</h6>
+              <h3 class="mb-0 text-dark fw-bold" id="count-superadmin">0</h3>
+            </div>
+            <div class="p-2 bg-warning bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center"
+              style="width: 48px; height: 48px;">
+              <i class="bi bi-shield-lock-fill fs-4 text-warning" style="color: #ed8936 !important;"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card stat-card shadow-sm border-0 h-100"
+        style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <h6 class="text-primary mb-1">Senior Agriculturists</h6>
+              <h3 class="mb-0 text-dark fw-bold" id="count-admin">0</h3>
+            </div>
+            <div class="p-2 bg-primary bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center"
+              style="width: 48px; height: 48px;">
+              <i class="bi bi-award-fill fs-4 text-primary"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card stat-card shadow-sm border-0 h-100"
+        style="background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <h6 class="text-success mb-1">COS / Agriculturists</h6>
+              <h3 class="mb-0 text-dark fw-bold" id="count-supervisor">0</h3>
+            </div>
+            <div class="p-2 bg-success bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center"
+              style="width: 48px; height: 48px;">
+              <i class="bi bi-person-badge fs-4 text-success"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+    <div class="card-body p-0">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="bg-light">
+          <tr>
+            <th class="ps-4 py-3 text-muted fw-semibold">Personnel</th>
+            <th class="py-3 text-muted fw-semibold">Contact</th>
+            <th class="py-3 text-muted fw-semibold">Role Modulator</th>
+            <th class="py-3 text-muted fw-semibold">Field Assignment</th>
+            <th class="py-3 text-muted fw-semibold text-center">Status</th>
+            <th class="pe-4 py-3 text-muted fw-semibold text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in users %}
+          <!-- Pass role counts to JS using data attributes -->
+          <tr class="user-row" data-role="{{ u.profile.role }}">
+            <td class="ps-4 py-3">
+              <div class="d-flex align-items-center">
+                <div
+                  class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center fw-bold me-3 text-uppercase"
+                  style="width: 40px; height: 40px; font-size: 1.1rem;">
+                  {{ u.username|make_list|first }}
+                </div>
+                <div>
+                  <h6 class="mb-0 text-dark fw-bold">{{ u.get_full_name|default:u.username }}</h6>
+                  <small class="text-muted">@{{ u.username }}</small>
+                </div>
+              </div>
+            </td>
+            <td class="py-3 text-muted">
+              {% if u.email %}<i class="bi bi-envelope me-1"></i>{{ u.email }}{% else %}—{% endif %}
+            </td>
+            <td class="py-3">
+              <!-- INSTANT ROLE MODULATION SELECT -->
+              <select class="form-select form-select-sm role-modulator-select fw-semibold" data-user-id="{{ u.pk }}" {% if u == request.user %}disabled{% endif %}
+                style="border-radius: 6px; background-color: #f8f9fa; cursor: pointer; max-width: 250px;">
+                <option value="superadmin" class="text-warning fw-bold" {% if u.profile.role == 'superadmin' %}selected{% endif %}>PCDM / Division Chief I</option>
+                <option value="admin" class="text-primary fw-bold" {% if u.profile.role == 'admin' %}selected{% endif %}>
+                  Senior Agriculturist</option>
+                <option value="supervisor" class="text-success fw-bold" {% if u.profile.role == 'supervisor' %}selected{% endif %}>COS / Agriculturist</option>
+              </select>
+              {% if u == request.user %}<small class="text-muted d-block mt-1" style="font-size: 0.75rem;">(You cannot
+                modulate yourself)</small>{% endif %}
+            </td>
+            <td class="py-3">
+              <span class="badge bg-light text-dark border">
+                <i class="bi bi-geo-alt-fill text-muted me-1"></i>
+                {% if u.profile.role == 'superadmin' or u.profile.role == 'admin' %}
+                Main Office
+                {% elif u.profile.field_site %}
+                {{ u.profile.field_site }}
+                {% else %}
+                Unassigned
+                {% endif %}
+              </span>
+            </td>
+            <td class="py-3 text-center">
+              {% if u.is_active %}
+              <span
+                class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-3">Active</span>
+              {% else %}
+              <span
+                class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 rounded-pill px-3">Inactive</span>
+              {% endif %}
+            </td>
+            <td class="pe-4 py-3 text-end">
+              <div class="btn-group shadow-sm">
+                <a href="{% url 'accounts:user_edit' u.pk %}" class="btn btn-sm btn-light border" title="Edit Profile">
+                  <i class="bi bi-pencil-square text-primary"></i>
+                </a>
+                <a href="{% url 'accounts:user_toggle_active' u.pk %}"
+                  class="btn btn-sm btn-light border {% if not u.is_active %}text-success{% else %}text-danger{% endif %}"
+                  title="Toggle Access" onclick="return confirm('Change access for {{ u.username }}?')">
+                  <i class="bi bi-{% if u.is_active %}person-dash-fill{% else %}person-check-fill{% endif %}"></i>
+                </a>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="6" class="text-center text-muted py-5">
+              <i class="bi bi-people d-block fs-1 mb-2"></i>
+              No personnel found.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Position fixed Toast for AJAX notifications -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1080">
+  <div id="roleToast" class="toast align-items-center text-white bg-success border-0 shadow-lg" role="alert"
+    aria-live="assertive" aria-atomic="true">
+    <div class="d-flex">
+      <div class="toast-body fw-semibold" id="roleToastBody">
+        <i class="bi bi-check-circle-fill me-2"></i>Role updated successfully!
+      </div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+        aria-label="Close"></button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    // 1. Calculate Initial Dashboard Stats
+    function updateDashboardCounts() {
+      let sc = 0; // Super Admin (Division Chief)
+      let a = 0;  // Admin (Senior Agriculturist)
+      let sup = 0; // Supervisor (COS)
+
+      document.querySelectorAll('.role-modulator-select').forEach(select => {
+        if (select.value === 'superadmin') sc++;
+        if (select.value === 'admin') a++;
+        if (select.value === 'supervisor') sup++;
+      });
+
+      document.getElementById('count-superadmin').innerText = sc;
+      document.getElementById('count-admin').innerText = a;
+      document.getElementById('count-supervisor').innerText = sup;
+    }
+
+    // Run once on load
+    updateDashboardCounts();
+
+    // Toast setup
+    const toastEl = document.getElementById('roleToast');
+    const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
+    const toastBody = document.getElementById('roleToastBody');
+
+    // 2. Handle AJAX Modulator Changes
+    document.querySelectorAll('.role-modulator-select').forEach(select => {
+      select.addEventListener('change', function () {
+        const userId = this.getAttribute('data-user-id');
+        const newRole = this.value;
+        const originalValue = this.querySelector('option[selected]')?.value; // fallback value
+        const csrfToken = '{{ csrf_token }}';
+
+        // Visual loading state
+        this.style.opacity = '0.5';
+        this.style.pointerEvents = 'none';
+
+        fetch(`/accounts/users/${userId}/update-role/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': csrfToken,
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          body: new URLSearchParams({
+            'role': newRole
+          })
+        })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              // Show success block
+              toastEl.classList.remove('bg-danger');
+              toastEl.classList.add('bg-success');
+              toastBody.innerHTML = `<i class="bi bi-check-circle-fill me-2"></i>${data.message}`;
+              toast.show();
+
+              // Recompute dashboard
+              updateDashboardCounts();
+            } else {
+              // Revert UI on error
+              this.value = originalValue;
+              toastEl.classList.remove('bg-success');
+              toastEl.classList.add('bg-danger');
+              toastBody.innerHTML = `<i class="bi bi-exclamation-octagon-fill me-2"></i>Error: ${data.error}`;
+              toast.show();
+            }
+          })
+          .catch(error => {
+            // Revert UI on error
+            this.value = originalValue;
+            console.error('Error:', error);
+            toastEl.classList.remove('bg-success');
+            toastEl.classList.add('bg-danger');
+            toastBody.innerHTML = `<i class="bi bi-exclamation-octagon-fill me-2"></i>Network Error`;
+            toast.show();
+          })
+          .finally(() => {
+            // Restore UI state
+            this.style.opacity = '1';
+            this.style.pointerEvents = 'auto';
+          });
+      });
+    });
+  });
+</script>
+{% endblock %}

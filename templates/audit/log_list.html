@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Audit Logs — PCA Portal{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="page-header">
+    <div>
+      <h1><i class="bi bi-shield-check me-2"></i>Audit Logs</h1>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <form method="get" class="row g-3 align-items-end">
+        <div class="col-md-3">
+          <label class="form-label">Action</label>
+          <select class="form-select" name="action">
+            <option value="">All Actions</option>
+            {% for value, label in action_choices %}
+            <option value="{{ value }}" {% if action_filter == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">User</label>
+          <input type="text" class="form-control" name="user" value="{{ user_filter }}" placeholder="Username...">
+        </div>
+        <div class="col-md-2">
+          <button type="submit" class="btn btn-primary w-100">
+            <i class="bi bi-funnel me-1"></i> Filter
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-body p-0">
+      <table class="table table-hover mb-0">
+        <thead>
+          <tr>
+            <th>Timestamp</th>
+            <th>User</th>
+            <th>Action</th>
+            <th>Model</th>
+            <th>Details</th>
+            <th>IP Address</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for log in logs %}
+          <tr>
+            <td><small>{{ log.timestamp|date:"M d, Y H:i:s" }}</small></td>
+            <td>{{ log.user|default:"System" }}</td>
+            <td><span class="badge bg-secondary">{{ log.get_action_display }}</span></td>
+            <td><small>{{ log.model_name|default:"—" }}</small></td>
+            <td><small class="text-muted">{{ log.get_formatted_details }}</small></td>
+            <td><small>{{ log.ip_address|default:"—" }}</small></td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="6" class="text-center text-muted py-4">No audit logs found.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

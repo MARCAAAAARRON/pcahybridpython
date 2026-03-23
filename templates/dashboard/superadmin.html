@@ -1,0 +1,264 @@
+{% extends "base.html" %}
+
+{% block title %}Super Admin Dashboard — PCA Portal{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="page-header">
+    <div>
+      <h1>Super Admin Dashboard</h1>
+      <p class="text-muted mb-0">System control and governance</p>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="row g-4 mb-4">
+    <div class="col-sm-6 col-xl-6">
+      <div class="card stat-card stat-gradient-3">
+        <div class="card-body d-flex align-items-center gap-3">
+          <div class="stat-icon"><i class="bi bi-journal-text"></i></div>
+          <div>
+            <div class="stat-value">{{ total_records }}</div>
+            <div class="stat-label">Total Records</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+      <div class="card stat-card stat-gradient-4">
+        <div class="card-body d-flex align-items-center gap-3">
+          <div class="stat-icon"><i class="bi bi-geo-alt"></i></div>
+          <div>
+            <div class="stat-value">{{ total_field_sites }}</div>
+            <div class="stat-label">Field Sites</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Field Data Overview -->
+  <h5 class="mb-3 mt-4 text-muted"><i class="bi bi-database me-2"></i>Field Data Stats</h5>
+  <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-5 g-4 mb-4">
+    <!-- Distribution -->
+    <div class="col">
+      <a href="{% url 'field_data:distribution_list' %}" class="text-decoration-none">
+        <div class="card stat-card shadow-sm border-0 h-100"
+          style="background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <div>
+                <h6 class="text-purple mb-1" style="color: #6a1b9a;">Hybrid Dist.</h6>
+                <h3 class="mb-0 text-dark">{{ global_field_stats.distribution_count }}</h3>
+              </div>
+              <div class="p-2 rounded" style="background-color: rgba(106, 27, 154, 0.1);">
+                <i class="bi bi-truck fs-4" style="color: #6a1b9a;"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    <!-- Harvest -->
+    <div class="col">
+      <a href="{% url 'field_data:harvest_list' %}" class="text-decoration-none">
+        <div class="card stat-card shadow-sm border-0 h-100"
+          style="background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <div>
+                <h6 class="text-success mb-1">Harvest</h6>
+                <h3 class="mb-0 text-dark">{{ global_field_stats.harvest_count }}</h3>
+              </div>
+              <div class="p-2 bg-success bg-opacity-10 rounded">
+                <i class="bi bi-tree text-success fs-4"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    <!-- Nursery -->
+    <div class="col">
+      <a href="{% url 'field_data:nursery_list' %}" class="text-decoration-none">
+        <div class="card stat-card shadow-sm border-0 h-100"
+          style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <div>
+                <h6 class="text-primary mb-1">Nursery</h6>
+                <h3 class="mb-0 text-dark">{{ global_field_stats.nursery_count }}</h3>
+              </div>
+              <div class="p-2 bg-primary bg-opacity-10 rounded">
+                <i class="bi bi-flower1 text-primary fs-4"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    <!-- Terminal -->
+    <div class="col">
+      <a href="{% url 'field_data:terminal_list' %}" class="text-decoration-none">
+        <div class="card stat-card shadow-sm border-0 h-100"
+          style="background: linear-gradient(135deg, #fff7ed 0%, #fed7aa 100%);">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <div>
+                <h6 class="mb-1" style="color: #ea580c;">Terminal Rep.</h6>
+                <h3 class="mb-0 text-dark">{{ global_field_stats.terminal_count }}</h3>
+              </div>
+              <div class="p-2 rounded" style="background-color: rgba(234, 88, 12, 0.1);">
+                <i class="bi bi-clipboard-data fs-4" style="color: #ea580c;"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    <!-- Pollen -->
+    <div class="col">
+      <a href="{% url 'field_data:pollen_list' %}" class="text-decoration-none">
+        <div class="card stat-card shadow-sm border-0 h-100"
+          style="background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <div>
+                <h6 class="text-warning mb-1" style="color: #f57f17 !important;">Pollen</h6>
+                <h3 class="mb-0 text-dark">{{ global_field_stats.pollen_count }}</h3>
+              </div>
+              <div class="p-2 bg-warning bg-opacity-10 rounded">
+                <i class="bi bi-droplet text-warning fs-4" style="color: #f57f17 !important;"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+  </div> <!-- End Field Data Stats row -->
+
+  <div class="row g-4 mb-4">
+    <!-- Field Data Chart -->
+    <div class="col-12">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+          <h6 class="mb-0 fw-bold"><i class="bi bi-bar-chart me-2"></i>Field Data Overview (Combined)</h6>
+        </div>
+        <div class="card-body" style="position: relative; height: 350px;">
+          <canvas id="fieldDataChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Per-Farm Breakdown -->
+  <div class="card shadow-sm border-0 mb-4">
+    <div class="card-header bg-white border-bottom py-3">
+      <h6 class="mb-0 fw-bold"><i class="bi bi-geo-alt me-2 text-primary"></i>Per-Farm Breakdown</h6>
+    </div>
+    <div class="card-body p-0">
+      <table class="table table-hover mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Farm / Field Site</th>
+            <th class="text-center">Harvest</th>
+            <th class="text-center">Nursery</th>
+            <th class="text-center">Terminal</th>
+            <th class="text-center">Pollen</th>
+            <th class="text-center">Distribution</th>
+            <th class="text-center">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for ps in per_site_field_stats %}
+          <tr>
+            <td class="fw-semibold"><i class="bi bi-geo-alt-fill text-primary me-1"></i>{{ ps.site.name }}</td>
+            <td class="text-center">{{ ps.harvest }}</td>
+            <td class="text-center">{{ ps.nursery }}</td>
+            <td class="text-center">{{ ps.terminal }}</td>
+            <td class="text-center">{{ ps.pollen }}</td>
+            <td class="text-center">{{ ps.distribution }}</td>
+            <td class="text-center fw-bold">{{ ps.total }}</td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7" class="text-center text-muted py-4">No field sites configured.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+        <tfoot class="table-light">
+          <tr class="fw-bold">
+            <td>Combined Total</td>
+            <td class="text-center">{{ global_field_stats.harvest_count }}</td>
+            <td class="text-center">{{ global_field_stats.nursery_count }}</td>
+            <td class="text-center">{{ global_field_stats.terminal_count }}</td>
+            <td class="text-center">{{ global_field_stats.pollen_count }}</td>
+            <td class="text-center">{{ global_field_stats.distribution_count }}</td>
+            <td class="text-center">{{ global_field_stats.total_count }}</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{{ chart_labels|json_script:"chartLabels" }}
+{{ chart_data|json_script:"chartData" }}
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const labels = JSON.parse(document.getElementById('chartLabels').textContent);
+    const data = JSON.parse(document.getElementById('chartData').textContent);
+
+    const ctx = document.getElementById('fieldDataChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Total Records',
+          data: data,
+          backgroundColor: [
+            '#c8e6c9', // Harvest
+            '#bbdefb', // Nursery
+            '#e1bee7', // Distribution
+            '#fed7aa', // Terminal
+            '#ffecb3'  // Pollen
+          ],
+          borderColor: [
+            '#4caf50',
+            '#2196f3',
+            '#9c27b0',
+            '#ff9800',
+            '#f57f17'
+          ],
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: { precision: 0 }
+          }
+        }
+      }
+    });
+  });
+</script>
+{% endblock %}

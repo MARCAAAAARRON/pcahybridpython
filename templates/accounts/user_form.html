@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}{% if edit_user %}Edit User{% else %}New User{% endif %} — PCA Portal{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="page-header">
+    <div>
+      <h1><i class="bi bi-person-{% if edit_user %}gear{% else %}plus{% endif %} me-2"></i>{% if edit_user %}Edit User:
+        {{ edit_user.username }}{% else %}Create New User{% endif %}</h1>
+    </div>
+    <a href="{% url 'accounts:user_list' %}" class="btn btn-outline-secondary">
+      <i class="bi bi-arrow-left me-1"></i> Back
+    </a>
+  </div>
+
+  <div class="card" style="max-width: 640px;">
+    <div class="card-body">
+      <form method="post">
+        {% csrf_token %}
+
+        <div class="row g-3">
+          {% if not edit_user %}
+          <div class="col-12">
+            <label for="username" class="form-label">Username</label>
+            <input type="text" class="form-control" id="username" name="username" required>
+          </div>
+          <div class="col-12">
+            <label for="password" class="form-label">Password</label>
+            <input type="password" class="form-control" id="password" name="password" required>
+          </div>
+          {% endif %}
+
+          <div class="col-md-6">
+            <label for="first_name" class="form-label">First Name</label>
+            <input type="text" class="form-control" id="first_name" name="first_name"
+              value="{{ edit_user.first_name|default:'' }}">
+          </div>
+          <div class="col-md-6">
+            <label for="last_name" class="form-label">Last Name</label>
+            <input type="text" class="form-control" id="last_name" name="last_name"
+              value="{{ edit_user.last_name|default:'' }}">
+          </div>
+          <div class="col-12">
+            <label for="email" class="form-label">Email</label>
+            <input type="email" class="form-control" id="email" name="email" value="{{ edit_user.email|default:'' }}">
+          </div>
+          <div class="col-md-6">
+            <label for="role" class="form-label">Role</label>
+            <select class="form-select" id="role" name="role">
+              <option value="supervisor" {% if edit_user.profile.role == 'supervisor' %}selected{% endif %}>Supervisor
+              </option>
+              <option value="admin" {% if edit_user.profile.role == 'admin' %}selected{% endif %}>Admin</option>
+              <option value="superadmin" {% if edit_user.profile.role == 'superadmin' %}selected{% endif %}>Super Admin
+              </option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label for="field_site" class="form-label">Field Site</label>
+            <select class="form-select" id="field_site" name="field_site">
+              <option value="">— None —</option>
+              {% for site in field_sites %}
+              <option value="{{ site.id }}" {% if edit_user.profile.field_site_id == site.id %}selected{% endif %}>{{site.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          {% if edit_user %}
+          <div class="col-md-6">
+            <div class="form-check mt-3">
+              <input class="form-check-input" type="checkbox" id="is_active" name="is_active" {% if edit_user.is_active %}checked{% endif %}>
+              <label class="form-check-label" for="is_active">Active</label>
+            </div>
+          </div>
+          <div class="col-12">
+            <label for="new_password" class="form-label">New Password <small class="text-muted">(leave blank to keep
+                current)</small></label>
+            <input type="password" class="form-control" id="new_password" name="new_password">
+          </div>
+          {% endif %}
+
+
+          <div class="col-12">
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-check-lg me-1"></i> {% if edit_user %}Save Changes{% else %}Create User{% endif %}
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

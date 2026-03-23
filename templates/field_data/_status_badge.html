@@ -1,0 +1,13 @@
+{% if status == 'draft' %}
+<span class="badge bg-secondary">Draft</span>
+{% elif status == 'prepared' %}
+<span class="badge bg-primary">Prepared</span>
+{% elif status == 'reviewed' %}
+<span class="badge bg-warning text-dark">Reviewed</span>
+{% elif status == 'noted' %}
+<span class="badge bg-success">Noted</span>
+{% elif status == 'returned' %}
+<span class="badge bg-danger">Returned</span>
+{% else %}
+<span class="badge bg-light text-dark">{{ status|title }}</span>
+{% endif %}

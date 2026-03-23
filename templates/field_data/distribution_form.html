@@ -1,0 +1,249 @@
+{% extends "base.html" %}
+
+{% block title %}{% if is_edit %}Edit{% else %}Add{% endif %} Distribution Record — PCA Portal{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="page-header d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h3 mb-1">{% if is_edit %}Edit{% else %}Add{% endif %} Distribution Record</h1>
+      <p class="text-muted mb-0">Enter hybrid seedling distribution data</p>
+    </div>
+    <a href="{% url 'field_data:distribution_list' %}" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-arrow-left"></i> Back to List
+    </a>
+  </div>
+
+  <div class="card shadow-sm border-0 mb-4 rounded-3">
+    <div class="card-header bg-white border-bottom py-3">
+      <h5 class="mb-0 fw-bold text-dark"><i class="bi bi-truck me-2 text-success"></i>Distribution Details</h5>
+    </div>
+    <div class="card-body">
+      <form method="post">
+        {% csrf_token %}
+
+        {% if is_admin %}
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Field Site <span class="text-danger">*</span></label>
+          <select name="field_site" class="form-select" required>
+            <option value="">— Select field site —</option>
+            {% for fs in field_sites %}
+            <option value="{{ fs.pk }}" {% if is_edit and record.field_site_id == fs.pk %}selected{% endif %}>{{ fs.name
+              }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        {% endif %}
+
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label">Report Month</label>
+            {{ form.report_month }}
+          </div>
+        </div>
+
+        <hr class="my-4">
+        <h6 class="text-muted mb-3">
+          <i class="bi bi-people me-1"></i>Distribution List
+          <small class="text-body-secondary">(add multiple farmers here)</small>
+        </h6>
+
+        <div id="distribution-container">
+          <!-- Rows inserted by JS -->
+        </div>
+        <button type="button" class="btn btn-outline-primary btn-sm mt-3" onclick="addDistRow()">
+          <i class="bi bi-plus-circle"></i> Add Farmer
+        </button>
+
+
+
+        <div class="d-flex justify-content-end gap-2 mt-4">
+          <a href="{% url 'field_data:distribution_list' %}" class="btn btn-outline-secondary">Cancel</a>
+          <button type="submit" class="btn btn-primary"><i class="bi bi-plus-circle"></i> {% if is_edit %}Update{% else %} Save {% endif %} Record</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  let distIndex = 0;
+
+  function addDistRow(data = {}) {
+    const container = document.getElementById('distribution-container');
+    const row = document.createElement('div');
+    row.className = 'card mb-3 border-success border-opacity-25 dist-row';
+
+    // Default values if not provided (e.g. from create form)
+    const reg = data.region || 'VII';
+    const prov = data.province || 'BOHOL';
+    const dist = data.district || '';
+    const m = data.municipality || '';
+    const b = data.barangay || '';
+    const ln = data.last_name || '';
+    const fn = data.first_name || '';
+    const mi = data.mi || '';
+    const gender = data.gender || '';
+    const fm = data.farm_municipality || '';
+    const fb = data.farm_barangay || '';
+    const sr = data.seedlings_received || '';
+    const dr = data.date_received || '';
+    const v = data.variety || '';
+    const sp = data.seedlings_planted || 0;
+    const dp = data.date_planted || '';
+    const rem = data.remarks || '';
+
+    // We use standard HTML inputs since we'll process arrays in the view (e.g. dist_last_name[])
+    row.innerHTML = `
+      <div class="card-header bg-success bg-opacity-10 py-2 d-flex justify-content-between align-items-center">
+        <span class="fw-semibold text-success"><i class="bi bi-person me-1"></i>Farmer Entry</span>
+        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeDistRow(this)">
+          <i class="bi bi-trash"></i>
+        </button>
+      </div>
+      <div class="card-body py-3">
+        <!-- Location & Name -->
+        <div class="row g-2 mb-3">
+          <div class="col-md-1">
+            <label class="form-label small">Region</label>
+            <input type="text" name="dist_region[]" class="form-control form-control-sm" value="${reg}" required>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label small">Province</label>
+            <input type="text" name="dist_province[]" class="form-control form-control-sm" value="${prov}" required>
+          </div>
+          <div class="col-md-1">
+            <label class="form-label small">District</label>
+            <input type="text" name="dist_district[]" class="form-control form-control-sm" value="${dist}">
+          </div>
+          <div class="col-md-2">
+            <label class="form-label small">Municipality</label>
+            <input type="text" name="dist_municipality[]" class="form-control form-control-sm" value="${m}" required>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label small">Barangay</label>
+            <input type="text" name="dist_barangay[]" class="form-control form-control-sm" value="${b}">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label small">Family Name</label>
+            <input type="text" name="dist_last_name[]" class="form-control form-control-sm" value="${ln}" required>
+          </div>
+        </div>
+        <div class="row g-2 mb-3">
+          <div class="col-md-2">
+            <label class="form-label small">Given Name</label>
+            <input type="text" name="dist_first_name[]" class="form-control form-control-sm" value="${fn}">
+          </div>
+          <div class="col-md-1">
+            <label class="form-label small">M.I.</label>
+            <input type="text" name="dist_mi[]" class="form-control form-control-sm" value="${mi}">
+          </div>
+          <div class="col-md-2">
+            <label class="form-label small">Gender</label>
+            <select name="dist_gender[]" class="form-select form-select-sm">
+              <option value="">--</option>
+              <option value="M" ${gender === 'M' ? 'selected' : ''}>Male</option>
+              <option value="F" ${gender === 'F' ? 'selected' : ''}>Female</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Farm & Seedlings -->
+        <div class="row g-2">
+          <div class="col-md-2">
+            <label class="form-label small">Farm Mun.</label>
+            <input type="text" name="dist_farm_municipality[]" class="form-control form-control-sm" value="${fm}">
+          </div>
+          <div class="col-md-2">
+            <label class="form-label small">Farm Brgy.</label>
+            <input type="text" name="dist_farm_barangay[]" class="form-control form-control-sm" value="${fb}">
+          </div>
+          <div class="col-md-2">
+            <label class="form-label small">Variety</label>
+            <input type="text" name="dist_variety[]" class="form-control form-control-sm" value="${v}">
+          </div>
+          <div class="col-md-2">
+            <label class="form-label small" title="Seedlings Received">Received</label>
+            <input type="text" name="dist_received[]" class="form-control form-control-sm dist-received-input" value="${sr}">
+          </div>
+          <div class="col-md-2">
+            <label class="form-label small">Date Recvd</label>
+            <input type="date" name="dist_date_received[]" class="form-control form-control-sm" value="${dr}">
+          </div>
+          <div class="col-md-2">
+            <label class="form-label small" title="Planted">Qty Plntd</label>
+            <input type="number" name="dist_planted[]" class="form-control form-control-sm dist-planted-input" min="0" value="${sp}">
+          </div>
+          <div class="col-md-2">
+            <label class="form-label small">Date Planted</label>
+            <input type="date" name="dist_date_planted[]" class="form-control form-control-sm" value="${dp}">
+          </div>
+        </div>
+
+        <!-- Remarks -->
+        <div class="row g-2 mt-2">
+          <div class="col-12">
+            <input type="text" name="dist_remarks[]" class="form-control form-control-sm" placeholder="Remarks" value="${rem}">
+          </div>
+        </div>
+      </div>
+    `;
+
+    container.appendChild(row);
+    distIndex++;
+  }
+
+  function removeDistRow(btn) {
+    const container = document.getElementById('distribution-container');
+    const rows = container.querySelectorAll('.dist-row');
+    if (rows.length <= 1) {
+      alert('You need at least one farmer entry.');
+      return;
+    }
+    btn.closest('.dist-row').remove();
+  }
+
+
+
+  // Initialization
+  document.addEventListener('DOMContentLoaded', () => {
+    {% if is_edit %}
+    {% if record.is_male %}
+    var g = 'M';
+    {% elif record.is_female %}
+    var g = 'F';
+    {% else %}
+    var g = '';
+    {% endif %}
+
+    const editData = {
+      region: "{{ record.region|escapejs }}",
+      province: "{{ record.province|escapejs }}",
+      district: "{{ record.district|escapejs }}",
+      municipality: "{{ record.municipality|escapejs }}",
+      barangay: "{{ record.barangay|escapejs }}",
+      last_name: "{{ record.farmer_last_name|escapejs }}",
+      first_name: "{{ record.farmer_first_name|escapejs }}",
+      mi: "{{ record.farmer_middle_initial|escapejs }}",
+      gender: g,
+      farm_municipality: "{{ record.farm_municipality|escapejs }}",
+      farm_barangay: "{{ record.farm_barangay|escapejs }}",
+      seedlings_received: "{{ record.seedlings_received|default:'' }}",
+      date_received: "{{ record.date_received|date:'Y-m-d'|default:'' }}",
+      variety: "{{ record.variety|escapejs }}",
+      seedlings_planted: "{{ record.seedlings_planted|default:'0' }}",
+      date_planted: "{{ record.date_planted|date:'Y-m-d'|default:'' }}",
+      remarks: "{{ record.remarks|escapejs }}"
+    };
+    addDistRow(editData);
+
+    // Also disable the multi-add button in edit mode, since the edit view only saves One record in views.py
+    const addBtn = document.querySelector('button[onclick="addDistRow()"]');
+    if (addBtn) addBtn.style.display = 'none';
+    {% else %}
+    // Add one empty row for create mode
+    addDistRow();
+    {% endif %}
+  });
+</script>
+{% endblock %}

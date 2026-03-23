@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Confirm Delete — Hybridization Record — PCA Portal{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+      <div class="card mt-5 shadow-sm border-0 rounded-3 overflow-hidden">
+        <div class="card-header bg-white border-bottom border-danger py-3">
+          <h5 class="card-title mb-0 fw-bold text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i>Confirm
+            Deletion</h5>
+        </div>
+        <div class="card-body p-4">
+          <p class="lead">Are you sure you want to delete this hybridization record?</p>
+          <div class="mb-4 p-3 bg-light rounded text-break">
+            <strong>Record:</strong> {{ record.hybrid_code }}<br>
+            <small class="text-muted">Crop: {{ record.crop_type }} · Site: {{ record.field_site }}</small>
+          </div>
+          <p class="text-danger fw-bold mb-4">
+            <i class="bi bi-exclamation-triangle-fill me-1"></i> This action cannot be undone.
+          </p>
+
+          <form method="post">
+            {% csrf_token %}
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+              <a href="{{ cancel_url }}" class="btn btn-outline-secondary">
+                Cancel
+              </a>
+              <button type="submit" class="btn btn-danger">
+                <i class="bi bi-trash-fill me-1"></i> Yes, Delete Record
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,492 @@
+{% extends "base.html" %}
+
+{% block title %}Reports — PCA Portal{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="page-header">
+    <div>
+      <h1><i class="bi bi-file-earmark-bar-graph me-2"></i>Reports & Export</h1>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="row g-4 mb-4">
+      <!-- Harvest Report -->
+      <div class="col-md-6">
+        <div class="card h-100 shadow-sm border-0 rounded-3">
+          <div class="card-header bg-white border-bottom py-3">
+            <h5 class="card-title fw-bold mb-0 text-success"><i class="bi bi-tree me-2"></i>Monthly Harvest Report</h5>
+          </div>
+          <div class="card-body">
+            <p class="text-muted small">Generate a report of on-farm hybrid seednut production including area, palms,
+              and seednut counts.</p>
+            <form method="post" action="{% url 'reports:generate' %}">
+              {% csrf_token %}
+              <input type="hidden" name="report_module" value="harvest">
+              <div class="row g-2 mb-3">
+                <div class="col-6">
+                  <label class="form-label small mb-1"><i class="bi bi-calendar-month me-1"></i>Month</label>
+                  <select class="form-select form-select-sm" name="filter_month">
+                    <option value="">All Months</option>
+                    <option value="1">January</option>
+                    <option value="2">February</option>
+                    <option value="3">March</option>
+                    <option value="4">April</option>
+                    <option value="5">May</option>
+                    <option value="6">June</option>
+                    <option value="7">July</option>
+                    <option value="8">August</option>
+                    <option value="9">September</option>
+                    <option value="10">October</option>
+                    <option value="11">November</option>
+                    <option value="12">December</option>
+                  </select>
+                </div>
+                <div class="col-6">
+                  <label class="form-label small mb-1"><i class="bi bi-calendar me-1"></i>Year</label>
+                  <input type="text" class="form-control form-control-sm" name="filter_year" list="yearList"
+                    placeholder="All Years">
+                </div>
+              </div>
+              {% if user.profile.role in 'admin,superadmin' %}
+              <div class="mb-3">
+                <select class="form-select form-select-sm" name="field_site">
+                  <option value="" selected>All Sites (Consolidated)</option>
+                  {% for site in field_sites %}
+                  <option value="{{ site.id }}">{{ site.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              {% endif %}
+              <div class="d-flex gap-2">
+                <button type="submit" name="report_type" value="pdf"
+                  class="btn btn-outline-danger btn-sm flex-grow-1"><i class="bi bi-file-earmark-pdf"></i>
+                  PDF</button>
+                <button type="submit" name="report_type" value="excel"
+                  class="btn btn-outline-success btn-sm flex-grow-1"><i class="bi bi-file-earmark-excel"></i>
+                  Excel (.xlsx)</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Nursery Report -->
+      <div class="col-md-6">
+        <div class="card h-100 shadow-sm border-0 rounded-3">
+          <div class="card-header bg-white border-bottom py-3">
+            <h5 class="card-title fw-bold mb-0 text-primary"><i class="bi bi-flower1 me-2"></i>Nursery Operations Report
+            </h5>
+          </div>
+          <div class="card-body">
+            <p class="text-muted small">Generated reports for communal nursery establishment, tracking sown seednuts to
+              dispatched seedlings.</p>
+            <form method="post" action="{% url 'reports:generate' %}">
+              {% csrf_token %}
+              <input type="hidden" name="report_module" value="nursery">
+              <div class="row g-2 mb-3">
+                <div class="col-6">
+                  <label class="form-label small mb-1"><i class="bi bi-calendar-month me-1"></i>Month</label>
+                  <select class="form-select form-select-sm" name="filter_month">
+                    <option value="">All Months</option>
+                    <option value="1">January</option>
+                    <option value="2">February</option>
+                    <option value="3">March</option>
+                    <option value="4">April</option>
+                    <option value="5">May</option>
+                    <option value="6">June</option>
+                    <option value="7">July</option>
+                    <option value="8">August</option>
+                    <option value="9">September</option>
+                    <option value="10">October</option>
+                    <option value="11">November</option>
+                    <option value="12">December</option>
+                  </select>
+                </div>
+                <div class="col-6">
+                  <label class="form-label small mb-1"><i class="bi bi-calendar me-1"></i>Year</label>
+                  <select class="form-select form-select-sm" name="filter_year">
+                    <option value="">All Years</option>
+                    <option value="2024">2024</option>
+                    <option value="2025">2025</option>
+                    <option value="2026">2026</option>
+                    <option value="2027">2027</option>
+                    <option value="2028">2028</option>
+                    <option value="2029">2029</option>
+                    <option value="2030">2030</option>
+                  </select>
+                </div>
+              </div>
+              {% if user.profile.role in 'admin,superadmin' %}
+              <div class="mb-3">
+                <select class="form-select form-select-sm" name="field_site">
+                  <option value="" selected>All Sites (Consolidated)</option>
+                  {% for site in field_sites %}
+                  <option value="{{ site.id }}">{{ site.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              {% endif %}
+              <div class="d-flex gap-2">
+                <button type="submit" name="report_type" value="pdf"
+                  class="btn btn-outline-danger btn-sm flex-grow-1"><i class="bi bi-file-earmark-pdf"></i>
+                  PDF</button>
+                <button type="submit" name="report_type" value="excel"
+                  class="btn btn-outline-success btn-sm flex-grow-1"><i class="bi bi-file-earmark-excel"></i>
+                  Excel (.xlsx)</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Distribution Report -->
+      <div class="col-md-6">
+        <div class="card h-100 shadow-sm border-0 rounded-3">
+          <div class="card-header bg-white border-bottom py-3">
+            <h5 class="card-title fw-bold mb-0" style="color: #6a1b9a;"><i class="bi bi-truck me-2"></i>Hybrid
+              Distribution Report</h5>
+          </div>
+          <div class="card-body">
+            <p class="text-muted small">Records of dispatched seedlings, including farmer details and farm location.</p>
+            <form method="post" action="{% url 'reports:generate' %}">
+              {% csrf_token %}
+              <input type="hidden" name="report_module" value="distribution">
+              <div class="row g-2 mb-3">
+                <div class="col-6">
+                  <label class="form-label small mb-1"><i class="bi bi-calendar-month me-1"></i>Month</label>
+                  <select class="form-select form-select-sm" name="filter_month">
+                    <option value="">All Months</option>
+                    <option value="1">January</option>
+                    <option value="2">February</option>
+                    <option value="3">March</option>
+                    <option value="4">April</option>
+                    <option value="5">May</option>
+                    <option value="6">June</option>
+                    <option value="7">July</option>
+                    <option value="8">August</option>
+                    <option value="9">September</option>
+                    <option value="10">October</option>
+                    <option value="11">November</option>
+                    <option value="12">December</option>
+                  </select>
+                </div>
+                <div class="col-6">
+                  <label class="form-label small mb-1"><i class="bi bi-calendar me-1"></i>Year</label>
+                  <select class="form-select form-select-sm" name="filter_year">
+                    <option value="">All Years</option>
+                    <option value="2024">2024</option>
+                    <option value="2025">2025</option>
+                    <option value="2026">2026</option>
+                    <option value="2027">2027</option>
+                    <option value="2028">2028</option>
+                    <option value="2029">2029</option>
+                    <option value="2030">2030</option>
+                  </select>
+                </div>
+              </div>
+              {% if user.profile.role in 'admin,superadmin' %}
+              <div class="mb-3">
+                <select class="form-select form-select-sm" name="field_site">
+                  <option value="" selected>All Sites (Consolidated)</option>
+                  {% for site in field_sites %}
+                  <option value="{{ site.id }}">{{ site.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              {% endif %}
+              <div class="d-flex gap-2">
+                <button type="submit" name="report_type" value="pdf"
+                  class="btn btn-outline-danger btn-sm flex-grow-1"><i class="bi bi-file-earmark-pdf"></i>
+                  PDF</button>
+                <button type="submit" name="report_type" value="excel"
+                  class="btn btn-outline-success btn-sm flex-grow-1"><i class="bi bi-file-earmark-excel"></i>
+                  Excel (.xlsx)</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Terminal Report -->
+      <div class="col-md-6">
+        <div class="card h-100 shadow-sm border-0 rounded-3">
+          <div class="card-header bg-white border-bottom py-3">
+            <h5 class="card-title fw-bold mb-0" style="color: #e65100;"><i
+                class="bi bi-clipboard-data me-2"></i>Terminal Report</h5>
+          </div>
+          <div class="card-body">
+            <p class="text-muted small">Terminal reports for nursery operations, tracking seedling progress from sowing
+              to dispatch.</p>
+            <form method="post" action="{% url 'reports:generate' %}">
+              {% csrf_token %}
+              <input type="hidden" name="report_module" value="terminal">
+              <div class="row g-2 mb-3">
+                <div class="col-6">
+                  <label class="form-label small mb-1"><i class="bi bi-calendar-month me-1"></i>Month</label>
+                  <select class="form-select form-select-sm" name="filter_month">
+                    <option value="">All Months</option>
+                    <option value="1">January</option>
+                    <option value="2">February</option>
+                    <option value="3">March</option>
+                    <option value="4">April</option>
+                    <option value="5">May</option>
+                    <option value="6">June</option>
+                    <option value="7">July</option>
+                    <option value="8">August</option>
+                    <option value="9">September</option>
+                    <option value="10">October</option>
+                    <option value="11">November</option>
+                    <option value="12">December</option>
+                  </select>
+                </div>
+                <div class="col-6">
+                  <label class="form-label small mb-1"><i class="bi bi-calendar me-1"></i>Year</label>
+                  <select class="form-select form-select-sm" name="filter_year">
+                    <option value="">All Years</option>
+                    <option value="2024">2024</option>
+                    <option value="2025">2025</option>
+                    <option value="2026">2026</option>
+                    <option value="2027">2027</option>
+                    <option value="2028">2028</option>
+                    <option value="2029">2029</option>
+                    <option value="2030">2030</option>
+                  </select>
+                </div>
+              </div>
+              {% if user.profile.role in 'admin,superadmin' %}
+              <div class="mb-3">
+                <select class="form-select form-select-sm" name="field_site">
+                  <option value="" selected>All Sites (Consolidated)</option>
+                  {% for site in field_sites %}
+                  <option value="{{ site.id }}">{{ site.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              {% endif %}
+              <div class="d-flex gap-2">
+                <button type="submit" name="report_type" value="pdf"
+                  class="btn btn-outline-danger btn-sm flex-grow-1"><i class="bi bi-file-earmark-pdf"></i>
+                  PDF</button>
+                <button type="submit" name="report_type" value="excel"
+                  class="btn btn-outline-success btn-sm flex-grow-1"><i class="bi bi-file-earmark-excel"></i>
+                  Excel (.xlsx)</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Pollen Report -->
+    <div class="col-md-6">
+      <div class="card h-100 shadow-sm border-0 rounded-3">
+        <div class="card-header bg-white border-bottom py-3">
+          <h5 class="card-title fw-bold mb-0 text-warning"><i class="bi bi-droplet me-2"></i>Pollen Production Report
+          </h5>
+        </div>
+        <div class="card-body">
+          <p class="text-muted small">Pollen production and inventory records over a specific date range.</p>
+          <form method="post" action="{% url 'reports:generate' %}">
+            {% csrf_token %}
+            <input type="hidden" name="report_module" value="pollen">
+            <div class="row g-2 mb-3">
+              <div class="col-6">
+                <label class="form-label small mb-1"><i class="bi bi-calendar-month me-1"></i>Month</label>
+                <select class="form-select form-select-sm" name="filter_month">
+                  <option value="">All Months</option>
+                  <option value="1">January</option>
+                  <option value="2">February</option>
+                  <option value="3">March</option>
+                  <option value="4">April</option>
+                  <option value="5">May</option>
+                  <option value="6">June</option>
+                  <option value="7">July</option>
+                  <option value="8">August</option>
+                  <option value="9">September</option>
+                  <option value="10">October</option>
+                  <option value="11">November</option>
+                  <option value="12">December</option>
+                </select>
+              </div>
+              <div class="col-6">
+                <label class="form-label small mb-1"><i class="bi bi-calendar me-1"></i>Year</label>
+                <select class="form-select form-select-sm" name="filter_year">
+                  <option value="">All Years</option>
+                  <option value="2024">2024</option>
+                  <option value="2025">2025</option>
+                  <option value="2026">2026</option>
+                  <option value="2027">2027</option>
+                  <option value="2028">2028</option>
+                  <option value="2029">2029</option>
+                  <option value="2030">2030</option>
+                </select>
+              </div>
+            </div>
+            {% if user.profile.role in 'admin,superadmin' %}
+            <div class="mb-3">
+              <select class="form-select form-select-sm" name="field_site">
+                <option value="">All Sites (Consolidated)</option>
+                {% for site in field_sites %}
+                <option value="{{ site.id }}">{{ site.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            {% endif %}
+            <div class="d-flex gap-2">
+              <button type="submit" name="report_type" value="pdf" class="btn btn-outline-danger btn-sm flex-grow-1"><i
+                  class="bi bi-file-earmark-pdf"></i>
+                PDF</button>
+              <button type="submit" name="report_type" value="excel"
+                class="btn btn-outline-success btn-sm flex-grow-1"><i class="bi bi-file-earmark-excel"></i>
+                Excel (.xlsx)</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hybridization Records Report -->
+    <div class="col-md-6">
+      <div class="card h-100 shadow-sm border-0 rounded-3">
+        <div class="card-header bg-white border-bottom py-3">
+          <h5 class="card-title fw-bold mb-0" style="color: #0d6efd;">
+            <i class="bi bi-journal-text me-2"></i>Hybridization Records Report
+          </h5>
+        </div>
+        <div class="card-body">
+          <p class="text-muted small">Export hybridization experiment records including hybrid codes, parent lines,
+            growth status, and validation status.</p>
+          <form method="post" action="{% url 'reports:generate' %}">
+            {% csrf_token %}
+            <input type="hidden" name="report_module" value="hybridization">
+            <div class="row g-2 mb-3">
+              <div class="col-6">
+                <label class="form-label small mb-1"><i class="bi bi-calendar-month me-1"></i>Month</label>
+                <select class="form-select form-select-sm" name="filter_month">
+                  <option value="">All Months</option>
+                  <option value="1">January</option>
+                  <option value="2">February</option>
+                  <option value="3">March</option>
+                  <option value="4">April</option>
+                  <option value="5">May</option>
+                  <option value="6">June</option>
+                  <option value="7">July</option>
+                  <option value="8">August</option>
+                  <option value="9">September</option>
+                  <option value="10">October</option>
+                  <option value="11">November</option>
+                  <option value="12">December</option>
+                </select>
+              </div>
+              <div class="col-6">
+                <label class="form-label small mb-1"><i class="bi bi-calendar me-1"></i>Year</label>
+                <select class="form-select form-select-sm" name="filter_year">
+                  <option value="">All Years</option>
+                  <option value="2024">2024</option>
+                  <option value="2025">2025</option>
+                  <option value="2026">2026</option>
+                  <option value="2027">2027</option>
+                  <option value="2028">2028</option>
+                  <option value="2029">2029</option>
+                  <option value="2030">2030</option>
+                </select>
+              </div>
+            </div>
+            {% if user.profile.role in 'admin,superadmin' %}
+            <div class="mb-3">
+              <select class="form-select form-select-sm" name="field_site">
+                <option value="">All Sites (Consolidated)</option>
+                {% for site in field_sites %}
+                <option value="{{ site.id }}">{{ site.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            {% endif %}
+            <div class="d-flex gap-2">
+              <button type="submit" name="report_type" value="pdf" class="btn btn-outline-danger btn-sm flex-grow-1"><i
+                  class="bi bi-file-earmark-pdf"></i>
+                PDF</button>
+              <button type="submit" name="report_type" value="excel"
+                class="btn btn-outline-success btn-sm flex-grow-1"><i class="bi bi-file-earmark-excel"></i>
+                Excel (.xlsx)</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Links Info -->
+    <div class="col-12">
+      <div class="alert alert-light border shadow-sm d-flex align-items-center gap-3 mb-0 rounded-3">
+        <i class="bi bi-info-circle-fill text-primary fs-4"></i>
+        <div>
+          <strong>How it works:</strong>
+          Reports are generated from the data in your
+          <a href="{% url 'field_data:harvest_list' %}">Field Data tables</a> and
+          <a href="{% url 'hybridization:record_list' %}">Hybridization Records</a>.
+          Add or update data in those pages, then come here to export PDF or Excel reports.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Report History -->
+  <div class="col-12">
+    <div class="card shadow-sm border-0 rounded-3 overflow-hidden">
+      <div class="card-header bg-white border-bottom py-3">
+        <h5 class="card-title fw-bold mb-0 text-dark"><i class="bi bi-clock-history me-2 text-info"></i>Generated
+          Reports History</h5>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light border-bottom" style="border-color: #0b9e4f !important;">
+              <tr>
+                <th>Title</th>
+                <th>Type</th>
+                <th>Date</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for report in reports %}
+              <tr>
+                <td>{{ report.title }}</td>
+                <td>
+                  <span class="badge bg-{% if report.report_type == 'pdf' %}danger{% else %}success{% endif %}">
+                    {{ report.get_report_type_display }}
+                  </span>
+                </td>
+                <td><small>{{ report.created_at|date:"M d, Y H:i" }}</small></td>
+                <td>
+                  <a href="{% url 'reports:download' report.pk %}" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-download"></i>
+                  </a>
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="4" class="text-center text-muted py-4">No reports generated yet.</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <datalist id="yearList">
+    <option value="2024"></option>
+    <option value="2025"></option>
+    <option value="2026"></option>
+    <option value="2027"></option>
+    <option value="2028"></option>
+    <option value="2029"></option>
+    <option value="2030"></option>
+  </datalist>
+</div>
+</div>
+{% endblock %}

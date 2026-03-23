@@ -1,0 +1,284 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Access Denied — 403 Forbidden{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* Reset and layout for landing page (matches login.html) */
+  body {
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    overflow-x: hidden;
+  }
+
+  .landing-page {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  .landing-header {
+    background-color: #0b9e4f;
+    height: 80px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 40px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    z-index: 2;
+  }
+
+  .header-logo {
+    height: 45px;
+  }
+
+  .header-title {
+    color: white;
+    font-size: 1.3rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    z-index: 2;
+  }
+
+  .header-right a {
+    color: white;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .header-right a:hover {
+    color: #e2e8f0;
+  }
+
+  /* Yellow Slanted Shape Top */
+  .header-shape {
+    position: absolute;
+    top: 0;
+    right: 20%;
+    width: 280px;
+    height: 100%;
+    background-color: #d4e122;
+    transform: skewX(-35deg);
+    z-index: 1;
+  }
+
+  .landing-main {
+    flex: 1;
+    background-image: url('{% static "CoconutBackground.png" %}');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .landing-main::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.15);
+  }
+
+  /* 403 Error Card Styling */
+  .error-card-container {
+    z-index: 2;
+    width: 100%;
+    max-width: 500px;
+    padding: 20px;
+  }
+
+  .error-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    padding: 40px 30px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Decorative top bar for the card */
+  .error-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 6px;
+    background-color: #dc3545;
+    /* Red for error */
+  }
+
+  .error-icon {
+    font-size: 4rem;
+    color: #dc3545;
+    margin-bottom: 20px;
+  }
+
+  .error-title {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #333;
+    margin-bottom: 15px;
+  }
+
+  .error-message {
+    font-size: 1.1rem;
+    color: #666;
+    margin-bottom: 30px;
+    line-height: 1.5;
+  }
+
+  .return-btn {
+    background-color: #0b9e4f;
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: background-color 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .return-btn:hover {
+    background-color: #087a3d;
+    color: white;
+  }
+
+  .landing-footer {
+    background-color: #0b9e4f;
+    min-height: 120px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    padding: 20px;
+  }
+
+  .landing-footer h2 {
+    color: white;
+    font-size: 2.2rem;
+    font-weight: 700;
+    text-align: center;
+    margin: 0;
+    line-height: 1.3;
+    z-index: 2;
+  }
+
+  .footer-shape {
+    position: absolute;
+    bottom: 0;
+    right: -80px;
+    width: 320px;
+    height: 100%;
+    background-color: #d4e122;
+    transform: skewX(-35deg);
+    z-index: 1;
+  }
+
+  @media (max-width: 992px) {
+    .header-shape {
+      right: 10%;
+      width: 200px;
+    }
+
+    .landing-footer h2 {
+      font-size: 1.6rem;
+    }
+
+    .footer-shape {
+      width: 200px;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .header-shape {
+      display: none;
+    }
+
+    .footer-shape {
+      right: -120px;
+      width: 200px;
+    }
+
+    .landing-footer h2 {
+      font-size: 1.2rem;
+    }
+
+    .header-title {
+      display: none;
+    }
+
+    .landing-header {
+      padding: 0 20px;
+    }
+
+    .error-title {
+      font-size: 1.5rem;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block public_content %}
+<div class="landing-page">
+  <header class="landing-header">
+    <div class="header-left">
+      <img src="{% static 'PCA_Logo.png' %}" class="header-logo" alt="PCA Logo">
+      <span class="header-title">PCA - BOHOL</span>
+    </div>
+
+    <div class="header-shape"></div>
+
+    <div class="header-right">
+      <a href="{% url 'accounts:login' %}">HOME</a>
+    </div>
+  </header>
+
+  <main class="landing-main">
+    <div class="error-card-container">
+      <div class="error-card">
+        <i class="bi bi-shield-lock-fill error-icon"></i>
+        <h1 class="error-title">403 Forbidden</h1>
+        <p class="error-message">You do not have permission to access the requested resource. Please ensure you are
+          logged in with an account that has the proper clearance.</p>
+        <a href="{% url 'accounts:login' %}" class="return-btn">
+          <i class="bi bi-house-door-fill"></i> Return to Homepage
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <footer class="landing-footer">
+    <h2>Philippine Coconut Authority - Bohol<br>Hybridization Portal</h2>
+    <div class="footer-shape"></div>
+  </footer>
+</div>
+{% endblock %}

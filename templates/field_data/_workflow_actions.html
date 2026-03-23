@@ -1,0 +1,39 @@
+{% if record.status == 'draft' or record.status == 'returned' %}
+<a href="{% url 'field_data:change_status' data_type record.pk 'prepared' %}" class="btn btn-sm btn-outline-primary mb-1" title="Submit as Prepared">
+  <i class="bi bi-send"></i> Prepared
+</a>
+{% endif %}
+
+{% if request.user.profile.role == 'admin' or request.user.profile.role == 'superadmin' or request.user.profile.role == 'sysadmin' %}
+  {% if record.status == 'prepared' %}
+    {% if record.prepared_by != request.user %}
+    <a href="{% url 'field_data:change_status' data_type record.pk 'reviewed' %}" class="btn btn-sm btn-warning mb-1" title="Mark as Reviewed">
+      <i class="bi bi-check-circle"></i> Review
+    </a>
+    {% else %}
+    <span class="badge bg-light text-muted mb-1 py-1 px-2 border" style="cursor: help;" title="Trapping: You prepared this record. Someone else must review it.">
+      <i class="bi bi-shield-lock"></i> Review (Trapped)
+    </span>
+    {% endif %}
+    <a href="{% url 'field_data:change_status' data_type record.pk 'returned' %}" class="btn btn-sm btn-outline-danger mb-1" title="Return to Draft">
+      <i class="bi bi-arrow-return-left"></i> Return
+    </a>
+  {% endif %}
+{% endif %}
+
+{% if request.user.profile.role == 'superadmin' or request.user.profile.role == 'sysadmin' %}
+  {% if record.status == 'reviewed' %}
+    {% if record.prepared_by != request.user and record.reviewed_by != request.user %}
+    <a href="{% url 'field_data:change_status' data_type record.pk 'noted' %}" class="btn btn-sm btn-success mb-1" title="Mark as Noted">
+      <i class="bi bi-check-all"></i> Note
+    </a>
+    {% else %}
+    <span class="badge bg-light text-muted mb-1 py-1 px-2 border" style="cursor: help;" title="Trapping: You signed a previous step. Chief must be a different person.">
+      <i class="bi bi-shield-lock"></i> Note (Trapped)
+    </span>
+    {% endif %}
+    <a href="{% url 'field_data:change_status' data_type record.pk 'returned' %}" class="btn btn-sm btn-outline-danger mb-1" title="Return to Draft">
+      <i class="bi bi-arrow-return-left"></i> Return
+    </a>
+  {% endif %}
+{% endif %}

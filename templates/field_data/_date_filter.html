@@ -1,0 +1,17 @@
+<!-- Date filter controls: year + month dropdowns -->
+{# Date filter: include this partial inside a form that also has field_site #}
+<label class="form-label mb-0 text-muted">Year:</label>
+<select name="year" class="form-select form-select-sm" style="width: auto; min-width: 130px; padding-right: 2rem;" onchange="this.form.submit()">
+  <option value="">All Years</option>
+  {% for y in available_years %}
+  <option value="{{ y }}" {% if selected_year == y|stringformat:"d" %}selected{% endif %}>{{ y }}</option>
+  {% endfor %}
+</select>
+
+<label class="form-label mb-0 text-muted">Month:</label>
+<select name="month" class="form-select form-select-sm" style="width: auto; min-width: 130px; padding-right: 2rem;" onchange="this.form.submit()">
+  <option value="">All Months</option>
+  {% for num, name in months %}
+  <option value="{{ num }}" {% if selected_month == num|stringformat:"d" %}selected{% endif %}>{{ name }}</option>
+  {% endfor %}
+</select>

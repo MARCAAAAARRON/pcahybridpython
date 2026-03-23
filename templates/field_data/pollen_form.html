@@ -1,0 +1,240 @@
+{% extends "base.html" %}
+
+{% block title %}{% if is_edit %}Edit{% else %}Add{% endif %} Pollen Record — PCA Portal{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="page-header d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h3 mb-1">{% if is_edit %}Edit{% else %}Add{% endif %} Pollen Record</h1>
+      <p class="text-muted mb-0">Pollen Production &amp; Inventory</p>
+    </div>
+    <a href="{% url 'field_data:pollen_list' %}" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-arrow-left me-1"></i> Back to List
+    </a>
+  </div>
+
+  <div class="card shadow-sm border-0 mb-4 rounded-3">
+    <div class="card-header bg-white border-bottom py-3">
+      <h5 class="mb-0 fw-bold text-dark"><i class="bi bi-droplet me-2 text-warning"></i>Pollen Details</h5>
+    </div>
+    <div class="card-body">
+      <form method="post">
+        {% csrf_token %}
+
+        {% if is_admin %}
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Field Site <span class="text-danger">*</span></label>
+          <select name="field_site" id="id_field_site" class="form-select" required>
+            <option value="">— Select field site —</option>
+            {% for fs in field_sites %}
+            <option value="{{ fs.pk }}" {% if is_edit and record.field_site_id == fs.pk %}selected{% endif %}>{{ fs.name
+              }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        {% endif %}
+
+        <div class="row g-3">
+          <div class="col-md-3">
+            <label class="form-label">Report Month</label>
+            {{ form.report_month }}
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Month Label</label>
+            {{ form.month_label }}
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Pollen Variety</label>
+            {{ form.pollen_variety }}
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Ending Balance (Last Month)</label>
+            {{ form.ending_balance_prev }}
+          </div>
+        </div>
+
+        {% if not is_edit %}
+        <div class="mt-3">
+          <button type="button" class="btn btn-outline-success btn-sm" id="btn-carry-forward">
+            <i class="bi bi-arrow-repeat me-1"></i> Load from Previous Month
+          </button>
+          <small class="text-muted ms-2" id="carry-forward-status"></small>
+        </div>
+        {% endif %}
+
+        <hr class="my-4">
+        <h6 class="text-muted mb-3">Pollens Received from Other Center</h6>
+
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label">Source</label>
+            {{ form.pollen_source }}
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Date Received</label>
+            {{ form.date_received }}
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Amount of Pollens</label>
+            {{ form.pollens_received }}
+          </div>
+        </div>
+
+        <hr class="my-4">
+        <h6 class="text-muted mb-3">Pollen Utilization (grams per Week)</h6>
+
+        <div class="row g-3">
+          <div class="col-md-2">
+            <label class="form-label">Week 1</label>
+            {{ form.week1 }}
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Week 2</label>
+            {{ form.week2 }}
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Week 3</label>
+            {{ form.week3 }}
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Week 4</label>
+            {{ form.week4 }}
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Week 5</label>
+            {{ form.week5 }}
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Total Utilization</label>
+            {{ form.total_utilization }}
+          </div>
+        </div>
+
+        <div class="row g-3 mt-2">
+          <div class="col-md-4">
+            <label class="form-label">Ending Balance</label>
+            {{ form.ending_balance }}
+          </div>
+          <div class="col-12">
+            <label class="form-label">Remarks</label>
+            {{ form.remarks }}
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-end gap-2 mt-4">
+          <a href="{% url 'field_data:pollen_list' %}" class="btn btn-outline-secondary">Cancel</a>
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-1"></i>
+            {% if is_edit %} Update Record {% else %} Save Record {% endif %}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  function parseAmount(val) {
+    if (!val) return 0;
+    // Strip everything except numbers, dots, and minus sign
+    let numStr = val.replace(/[^\d.-]/g, '');
+    let num = parseFloat(numStr);
+    return isNaN(num) ? 0 : num;
+  }
+
+  function calculatePollen() {
+    const prevBalance = parseAmount(document.getElementById('id_ending_balance_prev')?.value);
+    const received = parseAmount(document.getElementById('id_pollens_received')?.value);
+
+    let totalWeeks = 0;
+    for (let i = 1; i <= 5; i++) {
+      totalWeeks += parseAmount(document.getElementById('id_week' + i)?.value);
+    }
+
+    const totalUtilEl = document.getElementById('id_total_utilization');
+    if (totalUtilEl) {
+      totalUtilEl.value = totalWeeks > 0 ? totalWeeks : '';
+    }
+
+    const endingBalanceEl = document.getElementById('id_ending_balance');
+    if (endingBalanceEl) {
+      const balance = prevBalance + received - totalWeeks;
+      // Allow ending balance to be empty if everything else is empty
+      if (!document.getElementById('id_ending_balance_prev')?.value &&
+        !document.getElementById('id_pollens_received')?.value &&
+        totalWeeks === 0) {
+        // Do nothing or clear to empty string, probably just let it be.
+      } else {
+        endingBalanceEl.value = balance;
+      }
+    }
+  }
+
+  // Attach event listeners to fields that affect the calculation
+  document.addEventListener('DOMContentLoaded', function () {
+    const fieldsToWatch = [
+      'id_ending_balance_prev', 'id_pollens_received',
+      'id_week1', 'id_week2', 'id_week3', 'id_week4', 'id_week5'
+    ];
+
+    fieldsToWatch.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.addEventListener('input', calculatePollen);
+      }
+    });
+
+    // Handle carry forward button
+    const cfBtn = document.getElementById('btn-carry-forward');
+    if (cfBtn) {
+      cfBtn.addEventListener('click', function () {
+        const statusEl = document.getElementById('carry-forward-status');
+        statusEl.textContent = 'Loading...';
+
+        let url = '{% url "field_data:pollen_carry_forward" %}';
+        const siteSelectEl = document.getElementById('id_field_site'); // Django form standard id
+        if (siteSelectEl && siteSelectEl.value !== undefined && siteSelectEl.value !== '') {
+          url += '?field_site=' + siteSelectEl.value;
+        } else if (!siteSelectEl) {
+          // we do nothing since for supervisor, site is inferred from user session
+        } else {
+          statusEl.textContent = 'Please select a field site first.';
+          statusEl.className = 'text-warning ms-2';
+          return;
+        }
+
+        fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+          .then(r => r.json())
+          .then(data => {
+            if (!data.found) {
+              statusEl.textContent = 'No previous records found for this site.';
+              statusEl.className = 'text-warning ms-2';
+              return;
+            }
+
+            const rmInput = document.getElementById('id_report_month');
+            const mlInput = document.getElementById('id_month_label');
+            const pvInput = document.getElementById('id_pollen_variety');
+            const prevBalInput = document.getElementById('id_ending_balance_prev');
+
+            if (rmInput && data.next_month_date) rmInput.value = data.next_month_date;
+            if (mlInput && data.next_month_label) mlInput.value = data.next_month_label;
+            if (pvInput && data.pollen_variety) pvInput.value = data.pollen_variety;
+            if (prevBalInput && data.ending_balance !== undefined) {
+              prevBalInput.value = data.ending_balance;
+              calculatePollen(); // recalculate
+            }
+
+            statusEl.textContent = '\u2713 Loaded from previous record.';
+            statusEl.className = 'text-success ms-2';
+          })
+          .catch(err => {
+            statusEl.textContent = 'Error loading data. Please try again.';
+            console.error(err);
+          });
+      });
+    }
+  });
+</script>
+{% endblock %}

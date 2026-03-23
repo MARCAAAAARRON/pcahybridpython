@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}Terminal Report — PCA Portal{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="page-header d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h3 mb-1">Terminal Report</h1>
+      <p class="text-muted mb-0">
+        Communal Nursery Establishment — Terminal Report
+        {% if selected_site %} — {{ selected_site.name }}{% endif %}
+        {% if selected_year %} · {{ selected_year }}{% endif %}
+      </p>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{% url 'field_data:terminal_create' %}" class="btn btn-primary btn-sm">
+        <i class="bi bi-plus-lg"></i>Add Record
+      </a>
+      <a href="{% url 'field_data:export' 'terminal' %}?{% if selected_site %}field_site={{ selected_site.pk }}&{% endif %}{% if selected_year %}year={{ selected_year }}&{% endif %}{% if selected_month %}month={{ selected_month }}{% endif %}"
+        class="btn btn-success btn-sm">
+        <i class="bi bi-file-earmark-excel"></i>Export
+      </a>
+      <a href="{% url 'field_data:overview' %}" class="btn btn-outline-primary btn-sm">
+        <i class="bi bi-arrow-left"></i>Back
+      </a>
+    </div>
+  </div>
+
+  <div class="mb-3">
+    <form method="get" class="d-flex align-items-center gap-3 flex-wrap">
+      {% if is_admin and field_sites %}
+      <label class="form-label mb-0 text-muted">Site:</label>
+      <select name="field_site" class="form-select form-select-sm" style="width: auto;" onchange="this.form.submit()">
+      <option value="">All Sites</option>
+      {% for fs in field_sites %}
+      <option value="{{ fs.pk }}" {% if selected_site and selected_site.pk == fs.pk %}selected{% endif %}>{{ fs.name }}
+      </option>
+      {% endfor %}
+      </select>
+      {% endif %}
+      {% include "field_data/_date_filter.html" %}
+    </form>
+  </div>
+
+  <div class="card shadow-sm border-0 mb-4 rounded-3 overflow-hidden">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light border-bottom" style="border-color: #0b9e4f !important;">
+            <tr>
+              <th>Site</th>
+              <th>Region/Prov/Dist</th>
+              <th>Brgy/Municipality</th>
+              <th>Proponent</th>
+              <th>Representative</th>
+              <th>Target</th>
+              <th>Harvested</th>
+              <th>Date Harvested</th>
+              <th>Type/Variety</th>
+              <th>Sown</th>
+              <th>Date Sown</th>
+              <th>Germinated</th>
+              <th>Ungerminated</th>
+              <th>Culled</th>
+              <th>Good @1ft</th>
+              <th>Ready to Plant</th>
+              <th>Dispatched</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in records %}
+            <tr>
+              <td><span class="badge bg-success">{{ r.field_site }}</span></td>
+              <td>{{ r.region_province_district }}</td>
+              <td>{{ r.barangay_municipality }}</td>
+              <td>{{ r.proponent_entity }}</td>
+              <td>{{ r.proponent_representative }}</td>
+              <td>{{ r.target_seednuts }}</td>
+              <td>{{ r.seednuts_harvested }}</td>
+              <td>{{ r.date_harvested|default:"—" }}</td>
+              <td>{{ r.variety }}</td>
+              <td>{{ r.seednuts_sown }}</td>
+              <td>{{ r.date_sown|default:"—" }}</td>
+              <td>{{ r.seedlings_germinated }}</td>
+              <td>{{ r.ungerminated_seednuts }}</td>
+              <td>{{ r.culled_seedlings }}</td>
+              <td>{{ r.good_seedlings }}</td>
+              <td>{{ r.ready_to_plant }}</td>
+              <td>{{ r.seedlings_dispatched }}</td>
+              <td>{% include "field_data/_status_badge.html" with status=r.status %}</td>
+              <td>
+                {% include "field_data/_workflow_actions.html" with record=r data_type='terminal' %}
+                <a href="{% url 'field_data:terminal_edit' r.pk %}" class="btn btn-sm btn-outline-secondary mb-1"
+                  title="Edit Record">
+                  <i class="bi bi-pencil"></i>
+                </a>
+                <a href="{% url 'field_data:record_delete' 'terminal' r.pk %}" class="btn btn-sm btn-outline-danger mb-1"
+                  title="Delete Record">
+                  <i class="bi bi-trash"></i>
+                </a>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="21" class="text-center text-muted py-4">
+                {% if selected_year or selected_month %}
+                No records match the selected filters.
+                {% else %}
+                No terminal records found.
+                <a href="{% url 'field_data:terminal_create' %}">Add your first record.</a>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

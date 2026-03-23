@@ -1,0 +1,337 @@
+{% extends "base.html" %}
+
+{% block title %}{% if is_edit %}Edit{% else %}Add{% endif %} Nursery Record — PCA Portal{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="page-header d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h3 mb-1">{% if is_edit %}Edit{% else %}Add{% endif %} Nursery Record</h1>
+      <p class="text-muted mb-0">Communal Nursery Establishment</p>
+    </div>
+    <a href="{% url 'field_data:nursery_list' %}" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-arrow-left"></i> Back to List
+    </a>
+  </div>
+
+  <div class="card shadow-sm border-0 mb-4 rounded-3">
+    <div class="card-header bg-white border-bottom py-3">
+      <h5 class="mb-0 fw-bold text-dark"><i class="bi bi-flower1 me-2 text-success"></i>Nursery Details</h5>
+    </div>
+    <div class="card-body">
+      <form method="post">
+        {% csrf_token %}
+
+        {% if is_admin %}
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Field Site <span class="text-danger">*</span></label>
+          <select name="field_site" id="id_field_site" class="form-select" required>
+            <option value="">— Select field site —</option>
+            {% for fs in field_sites %}
+            <option value="{{ fs.pk }}" {% if is_edit and record.field_site_id == fs.pk %}selected{% endif %}>{{ fs.name
+              }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        {% endif %}
+
+        <!-- report_type is set automatically by the view (operation or terminal) -->
+        <input type="hidden" name="report_type" value="{{ form.report_type.value }}">
+
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label">Report Month</label>
+            {{ form.report_month }}
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Region / Province / District</label>
+            {{ form.region_province_district }}
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Barangay / Municipality</label>
+            {{ form.barangay_municipality }}
+          </div>
+        </div>
+
+        {% if not is_edit %}
+        <div class="mt-3">
+          <button type="button" class="btn btn-outline-success btn-sm" id="btn-carry-forward">
+            <i class="bi bi-arrow-repeat"></i> Load from Previous Month
+          </button>
+          <small class="text-muted ms-2" id="carry-forward-status"></small>
+        </div>
+        {% endif %}
+
+        <hr class="my-4">
+        <h6 class="text-muted mb-3">Proponent</h6>
+
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label">Entity Name</label>
+            {{ form.proponent_entity }}
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Representative</label>
+            {{ form.proponent_representative }}
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Target No. of Seednuts</label>
+            {{ form.target_seednuts }}
+          </div>
+        </div>
+
+        <hr class="my-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h6 class="text-muted mb-0">Seednut Batches / Varieties</h6>
+          <button type="button" class="btn btn-sm btn-outline-success" onclick="addBatchRow()">
+            <i class="bi bi-plus-lg"></i> Add Batch
+          </button>
+        </div>
+
+        <div id="batch-container"></div>
+
+        <div class="d-flex justify-content-end gap-2 mt-4">
+          <a href="{% url 'field_data:nursery_list' %}" class="btn btn-outline-secondary">Cancel</a>
+          <button type="submit" class="btn btn-primary"><i class="bi bi-plus-circle"></i> {% if is_edit %}Update{% else %}Save{% endif %} Record</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  let batchIndex = 0;
+
+  function addBatchRow(data = {}) {
+    const container = document.getElementById('batch-container');
+    const batchDiv = document.createElement('div');
+    const currentBatchIndex = batchIndex;
+    
+    batchDiv.className = 'batch-card card mb-4 border-success shadow-sm';
+    batchDiv.innerHTML = `
+      <div class="card-header bg-success text-white d-flex justify-content-between align-items-center py-2">
+        <h6 class="mb-0 fw-bold"><i class="bi bi-box-seam me-1"></i> Harvest Batch ${currentBatchIndex + 1}</h6>
+        <button type="button" class="btn btn-sm btn-outline-light border-0" onclick="removeBatchRow(this)">
+          <i class="bi bi-x-lg"></i> Remove Batch
+        </button>
+      </div>
+      <div class="card-body bg-light pb-2">
+        <!-- Hidden input to track batch index during POST -->
+        <input type="hidden" name="batch_index[]" value="${currentBatchIndex}">
+        
+        <div class="row g-2 mb-3">
+          <div class="col-md-3">
+            <label class="form-label small text-muted mb-0 fw-bold">No. Harvested</label>
+            <input type="number" name="batch_harvested_${currentBatchIndex}[]" class="form-control form-control-sm" min="0" value="${data.seednuts_harvested || ''}">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label small text-muted mb-0 fw-bold">Date Harvested</label>
+            <input type="text" name="batch_d_harvested_${currentBatchIndex}[]" class="form-control form-control-sm" placeholder="e.g. August 27, 2025" value="${data.date_harvested || ''}">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label small text-muted mb-0 fw-bold">Date Received</label>
+            <input type="text" name="batch_d_received_${currentBatchIndex}[]" class="form-control form-control-sm" placeholder="e.g. August 28, 2025" value="${data.date_received || ''}">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label small text-muted mb-0 fw-bold">Source of Seednuts</label>
+            <input type="text" name="batch_source_${currentBatchIndex}[]" class="form-control form-control-sm" value="${data.source_of_seednuts || ''}">
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mt-4 mb-2 border-bottom pb-1">
+          <h6 class="text-secondary mb-0"><i class="bi bi-tags ms-1"></i> Varieties within this batch</h6>
+          <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addVarietyRow(this, ${currentBatchIndex})">
+            <i class="bi bi-plus"></i> Add Variety
+          </button>
+        </div>
+        
+        <div class="variety-container" id="variety-container-${currentBatchIndex}"></div>
+      </div>
+    `;
+
+    container.appendChild(batchDiv);
+    
+    // Add varieties to this batch
+    if (data.varieties && data.varieties.length > 0) {
+        data.varieties.forEach(v => addVarietyRow(batchDiv.querySelector('.btn-outline-secondary'), currentBatchIndex, v));
+    } else {
+        // Add one empty variety row by default
+        addVarietyRow(batchDiv.querySelector('.btn-outline-secondary'), currentBatchIndex);
+    }
+    
+    batchIndex++;
+  }
+
+  function addVarietyRow(btn, bIdx, data = {}) {
+    const container = document.getElementById(`variety-container-${bIdx}`);
+    const row = document.createElement('div');
+    row.className = 'variety-row border border-secondary border-opacity-25 rounded p-2 mb-2 bg-white position-relative';
+
+    row.innerHTML = `
+      <div class="position-absolute" style="top: 5px; right: 8px; z-index: 10;">
+        <button type="button" class="btn btn-sm text-danger p-0 m-0" onclick="removeVarietyRow(this)" title="Remove Variety">
+          <i class="bi bi-x-circle-fill"></i>
+        </button>
+      </div>
+      
+      <div class="row g-2 mb-2 pe-4">
+        <div class="col-md-4">
+          <label class="form-label small text-muted mb-0">Variety / Type</label>
+          <input type="text" name="variety_${bIdx}[]" class="form-control form-control-sm border-primary border-opacity-50" placeholder="e.g. PCA 15-10" value="${data.variety || ''}">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label small text-muted mb-0">No. Sown</label>
+          <input type="number" name="sown_${bIdx}[]" class="form-control form-control-sm sown-input" min="0" value="${data.seednuts_sown || ''}" oninput="calcVariety(this)">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label small text-muted mb-0">Date Sown</label>
+          <input type="text" name="d_sown_${bIdx}[]" class="form-control form-control-sm" placeholder="e.g. Sept 11, 2025" value="${data.date_sown || ''}">
+        </div>
+      </div>
+
+      <div class="row g-2 mb-2">
+        <div class="col-md-3">
+          <label class="form-label small text-muted mb-0">No. Germinated</label>
+          <input type="number" name="germinated_${bIdx}[]" class="form-control form-control-sm germ-input" min="0" value="${data.seedlings_germinated || ''}" oninput="calcVariety(this)">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label small text-muted mb-0">No. Ungerminated</label>
+          <input type="number" name="ungerminated_${bIdx}[]" class="form-control form-control-sm bg-light ungerm-input" min="0" value="${data.ungerminated_seednuts || ''}" readonly tabindex="-1">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label small text-muted mb-0">No. Culled Seedlings</label>
+          <input type="number" name="culled_${bIdx}[]" class="form-control form-control-sm culled-input" min="0" value="${data.culled_seedlings || ''}" oninput="calcVariety(this)">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label small text-muted mb-0">Good Seedlings @ 1 ft</label>
+          <input type="number" name="good_${bIdx}[]" class="form-control form-control-sm bg-light good-input" min="0" value="${data.good_seedlings || ''}" readonly tabindex="-1">
+        </div>
+      </div>
+
+      <div class="row g-2">
+        <div class="col-md-4">
+          <label class="form-label small text-muted mb-0">Ready to Plant (Polybagged)</label>
+          <input type="number" name="ready_${bIdx}[]" class="form-control form-control-sm" min="0" value="${data.ready_to_plant || ''}">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label small text-muted mb-0">Seedlings Dispatched</label>
+          <input type="number" name="dispatched_${bIdx}[]" class="form-control form-control-sm" min="0" value="${data.seedlings_dispatched || ''}">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label small text-muted mb-0">Remarks</label>
+          <input type="text" name="remarks_${bIdx}[]" class="form-control form-control-sm" value="${data.remarks || ''}">
+        </div>
+      </div>
+    `;
+    container.appendChild(row);
+  }
+
+  function removeBatchRow(btn) {
+    const container = document.getElementById('batch-container');
+    const rows = container.querySelectorAll('.batch-card');
+    if (rows.length <= 1) {
+      alert('You need at least one batch row.');
+      return;
+    }
+    btn.closest('.batch-card').remove();
+  }
+
+  function removeVarietyRow(btn) {
+    const container = btn.closest('.variety-container');
+    const rows = container.querySelectorAll('.variety-row');
+    if (rows.length <= 1) {
+      alert('You must have at least one variety in this batch.');
+      return;
+    }
+    btn.closest('.variety-row').remove();
+  }
+
+  function calcVariety(el) {
+    const row = el.closest('.variety-row');
+    const sown = parseInt(row.querySelector('.sown-input').value) || 0;
+    const germ = parseInt(row.querySelector('.germ-input').value) || 0;
+    const culled = parseInt(row.querySelector('.culled-input').value) || 0;
+
+    const ungerm = sown - germ;
+    row.querySelector('.ungerm-input').value = ungerm > 0 ? ungerm : 0;
+
+    const good = germ - culled;
+    row.querySelector('.good-input').value = good > 0 ? good : 0;
+  }
+
+  // ----- Carry-forward: load previous month data -----
+  const cfBtn = document.getElementById('btn-carry-forward');
+  if (cfBtn) {
+    cfBtn.addEventListener('click', function () {
+      const statusEl = document.getElementById('carry-forward-status');
+      statusEl.textContent = 'Loading...';
+
+      let url = '{% url "field_data:nursery_carry_forward" %}';
+      const siteSelect = document.getElementById('id_field_site');
+      if (siteSelect && siteSelect.value) {
+        url += '?field_site=' + siteSelect.value;
+      }
+
+      fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+        .then(r => r.json())
+        .then(data => {
+          if (!data.found) {
+            statusEl.textContent = 'No previous records found for this site.';
+            statusEl.className = 'text-warning ms-2';
+            return;
+          }
+
+          // Fill constant fields
+          const rmInput = document.getElementById('id_report_month');
+          const rpdInput = document.getElementById('id_region_province_district');
+          const bmInput = document.getElementById('id_barangay_municipality');
+          const peInput = document.getElementById('id_proponent_entity');
+          const prInput = document.getElementById('id_proponent_representative');
+          const tsInput = document.getElementById('id_target_seednuts');
+
+          if (rmInput && data.next_month_date) rmInput.value = data.next_month_date;
+          if (rpdInput) rpdInput.value = data.region_province_district;
+          if (bmInput) bmInput.value = data.barangay_municipality;
+          if (peInput) peInput.value = data.proponent_entity;
+          if (prInput) prInput.value = data.proponent_representative;
+          if (tsInput) tsInput.value = data.target_seednuts;
+
+          // Fill batch rows
+          const container = document.getElementById('batch-container');
+          container.innerHTML = '';
+          batchIndex = 0;
+
+          if (data.batches && data.batches.length > 0) {
+            data.batches.forEach(b => addBatchRow(b));
+          } else {
+            addBatchRow();
+          }
+
+          statusEl.textContent = '\u2713 Loaded from previous record. Update counts for the new month.';
+          statusEl.className = 'text-success ms-2';
+        })
+        .catch(err => {
+          statusEl.textContent = 'Error loading data. Please try again.';
+          console.error(err);
+        });
+    });
+  }
+
+  // Pre-fill existing data during edit
+  const existingBatchesRaw = '{{ existing_batches|escapejs }}';
+  if (existingBatchesRaw && existingBatchesRaw !== '[]' && existingBatchesRaw !== 'None') {
+      try {
+          // Note: In Django, safely parsing complex JSON in a template usually requires an API or a custom filter.
+          // Since existing_batches was passed context, we need to pass true JSON, but due to string formatting
+          // in the template, we'll try parsing if it's JSON.
+          const existingBatchesJSON = JSON.parse(existingBatchesRaw.replace(/&#x27;/g, '"'));
+          existingBatchesJSON.forEach(b => addBatchRow(b));
+      } catch (e) {
+          console.error("Error parsing existing batches JSON:", e);
+          addBatchRow();
+      }
+  } else {
+      addBatchRow();
+  }
+</script>
+{% endblock %}

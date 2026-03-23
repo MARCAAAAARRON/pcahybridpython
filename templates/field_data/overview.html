@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+
+{% block title %}Field Data — PCA Portal{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="page-header">
+    <div>
+      <h1>Field Data Overview</h1>
+      <p class="text-muted mb-0">
+        {% if selected_site %}Data for {{ selected_site.name }}{% else %}All field sites{% endif %}
+        {% if selected_year %} · {{ selected_year }}{% endif %}
+        {% if selected_month %}{% for num, name in months %}{% if num|stringformat:"d" == selected_month %} · {{ name
+        }}{% endif %}{% endfor %}{% endif %}
+      </p>
+    </div>
+    <div class="d-flex gap-2">
+      <div class="dropdown">
+        <button class="btn btn-primary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+          <i class="bi bi-plus-circle"></i>Add Data
+        </button>
+        <ul class="dropdown-menu">
+          <li><a class="dropdown-item" href="{% url 'field_data:distribution_create' %}"><i
+                class="bi bi-truck me-2"></i>Distribution</a></li>
+          <li><a class="dropdown-item" href="{% url 'field_data:harvest_create' %}"><i
+                class="bi bi-basket3 me-2"></i>Harvest</a></li>
+          <li><a class="dropdown-item" href="{% url 'field_data:nursery_create' %}"><i
+                class="bi bi-tree me-2"></i>Nursery</a></li>
+          <li><a class="dropdown-item" href="{% url 'field_data:terminal_create' %}"><i
+                class="bi bi-clipboard-data me-2"></i>Terminal Report</a></li>
+          <li><a class="dropdown-item" href="{% url 'field_data:pollen_create' %}"><i
+                class="bi bi-flower1 me-2"></i>Pollen</a></li>
+        </ul>
+      </div>
+      <div class="dropdown">
+        <button class="btn btn-success btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+          <i class="bi bi-file-earmark-excel"></i>Full Excel Report
+        </button>
+        <ul class="dropdown-menu">
+          <li><a class="dropdown-item"
+              href="{% url 'field_data:export' 'distribution' %}?{% if selected_site %}field_site={{ selected_site.pk }}&{% endif %}{% if selected_year %}year={{ selected_year }}&{% endif %}{% if selected_month %}month={{ selected_month }}{% endif %}"><i
+                class="bi bi-truck me-2"></i>Distribution</a></li>
+          <li><a class="dropdown-item"
+              href="{% url 'field_data:export' 'harvest' %}?{% if selected_site %}field_site={{ selected_site.pk }}&{% endif %}{% if selected_year %}year={{ selected_year }}&{% endif %}{% if selected_month %}month={{ selected_month }}{% endif %}"><i
+                class="bi bi-basket3 me-2"></i>Harvest</a></li>
+          <li><a class="dropdown-item"
+              href="{% url 'field_data:export' 'nursery' %}?{% if selected_site %}field_site={{ selected_site.pk }}&{% endif %}{% if selected_year %}year={{ selected_year }}&{% endif %}{% if selected_month %}month={{ selected_month }}{% endif %}"><i
+                class="bi bi-tree me-2"></i>Nursery</a></li>
+          <li><a class="dropdown-item"
+              href="{% url 'field_data:export' 'terminal' %}?{% if selected_site %}field_site={{ selected_site.pk }}&{% endif %}{% if selected_year %}year={{ selected_year }}&{% endif %}{% if selected_month %}month={{ selected_month }}{% endif %}"><i
+                class="bi bi-clipboard-data me-2"></i>Terminal Report</a></li>
+          <li><a class="dropdown-item"
+              href="{% url 'field_data:export' 'pollen' %}?{% if selected_site %}field_site={{ selected_site.pk }}&{% endif %}{% if selected_year %}year={{ selected_year }}&{% endif %}{% if selected_month %}month={{ selected_month }}{% endif %}"><i
+                class="bi bi-flower1 me-2"></i>Pollen</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters Row -->
+  <div class="mb-4">
+    <form method="get" class="d-flex align-items-center gap-3 flex-wrap">
+      {% if is_admin and field_sites %}
+      <label class="form-label mb-0 text-muted">Site:</label>
+      <select name="field_site" class="form-select form-select-sm" style="width: auto;" onchange="this.form.submit()">
+        <option value="">All Sites</option>
+        {% for fs in field_sites %}
+        <option value="{{ fs.pk }}" {% if selected_site and selected_site.pk == fs.pk %}selected{% endif %}>{{ fs.name }}
+        </option>
+        {% endfor %}
+      </select>
+      {% endif %}
+      {% include "field_data/_date_filter.html" %}
+    </form>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="row g-4 mb-4">
+    <div class="col-sm-6 col-xl-3">
+      <a href="{% url 'field_data:distribution_list' %}?{% if selected_site %}field_site={{ selected_site.pk }}&{% endif %}{% if selected_year %}year={{ selected_year }}&{% endif %}{% if selected_month %}month={{ selected_month }}{% endif %}"
+        class="text-decoration-none">
+        <div class="card stat-card stat-gradient-1">
+          <div class="card-body d-flex align-items-center gap-3">
+            <div class="stat-icon"><i class="bi bi-truck"></i></div>
+            <div>
+              <div class="stat-value">{{ distribution_count }}</div>
+              <div class="stat-label">Hybrid Distribution</div>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+      <a href="{% url 'field_data:harvest_list' %}?{% if selected_site %}field_site={{ selected_site.pk }}&{% endif %}{% if selected_year %}year={{ selected_year }}&{% endif %}{% if selected_month %}month={{ selected_month }}{% endif %}"
+        class="text-decoration-none">
+        <div class="card stat-card stat-gradient-2">
+          <div class="card-body d-flex align-items-center gap-3">
+            <div class="stat-icon"><i class="bi bi-basket3"></i></div>
+            <div>
+              <div class="stat-value">{{ harvest_count }}</div>
+              <div class="stat-label">Monthly Harvest</div>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+      <a href="{% url 'field_data:nursery_list' %}?{% if selected_site %}field_site={{ selected_site.pk }}&{% endif %}{% if selected_year %}year={{ selected_year }}&{% endif %}{% if selected_month %}month={{ selected_month }}{% endif %}"
+        class="text-decoration-none">
+        <div class="card stat-card stat-gradient-3">
+          <div class="card-body d-flex align-items-center gap-3">
+            <div class="stat-icon"><i class="bi bi-tree"></i></div>
+            <div>
+              <div class="stat-value">{{ nursery_count }}</div>
+              <div class="stat-label">Nursery Operations</div>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+      <a href="{% url 'field_data:terminal_list' %}?{% if selected_site %}field_site={{ selected_site.pk }}&{% endif %}{% if selected_year %}year={{ selected_year }}&{% endif %}{% if selected_month %}month={{ selected_month }}{% endif %}"
+        class="text-decoration-none">
+        <div class="card stat-card" style="background: linear-gradient(135deg, #fff7ed, #fed7aa);">
+          <div class="card-body d-flex align-items-center gap-3">
+            <div class="stat-icon" style="background: #ea580c; color: #fff;"><i class="bi bi-clipboard-data"></i></div>
+            <div>
+              <div class="stat-value">{{ terminal_count }}</div>
+              <div class="stat-label">Terminal Report</div>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+      <a href="{% url 'field_data:pollen_list' %}?{% if selected_site %}field_site={{ selected_site.pk }}&{% endif %}{% if selected_year %}year={{ selected_year }}&{% endif %}{% if selected_month %}month={{ selected_month }}{% endif %}"
+        class="text-decoration-none">
+        <div class="card stat-card stat-gradient-4">
+          <div class="card-body d-flex align-items-center gap-3">
+            <div class="stat-icon"><i class="bi bi-flower1"></i></div>
+            <div>
+              <div class="stat-value">{{ pollen_count }}</div>
+              <div class="stat-label">Pollen Production</div>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  {% if not distribution_count and not harvest_count and not nursery_count and not terminal_count and not pollen_count %}
+  <div class="card">
+    <div class="card-body text-center text-muted py-5">
+      <i class="bi bi-database" style="font-size: 3rem;"></i>
+      <p class="mt-3 mb-0">
+        {% if selected_year or selected_month %}
+        No records match the selected date filters. Try adjusting your filters above.
+        {% else %}
+        No field data entered yet. Click <strong>Add Data</strong> above to start entering records.
+        {% endif %}
+      </p>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

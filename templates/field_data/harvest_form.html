@@ -1,0 +1,275 @@
+{% extends "base.html" %}
+
+{% block title %}{% if is_edit %}Edit{% else %}Add{% endif %} Harvest Record — PCA Portal{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="page-header d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h3 mb-1">{% if is_edit %}Edit{% else %}Add{% endif %} Harvest Record</h1>
+      <p class="text-muted mb-0">On-Farm Hybrid Seednut Production</p>
+    </div>
+    <a href="{% url 'field_data:harvest_list' %}" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-arrow-left"></i> Back to List
+    </a>
+  </div>
+
+  <div class="card shadow-sm border-0 mb-4 rounded-3">
+    <div class="card-header bg-white border-bottom py-3">
+      <h5 class="mb-0 fw-bold text-dark"><i class="bi bi-tree me-2 text-success"></i>Harvest Details</h5>
+    </div>
+    <div class="card-body">
+      <form method="post">
+        {% csrf_token %}
+
+        {% if is_admin %}
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Field Site <span class="text-danger">*</span></label>
+          <select name="field_site" id="id_field_site" class="form-select" required>
+            <option value="">— Select field site —</option>
+            {% for fs in field_sites %}
+            <option value="{{ fs.pk }}" {% if is_edit and record.field_site_id == fs.pk %}selected{% endif %}>{{ fs.name
+              }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        {% endif %}
+
+        <div class="row g-3">
+          <div class="col-md-3">
+            <label class="form-label">Report Month</label>
+            {{ form.report_month }}
+          </div>
+          <div class="col-md-5">
+            <label class="form-label">Farm Location</label>
+            {{ form.location }}
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Name of Partner / Farm</label>
+            {{ form.farm_name }}
+          </div>
+        </div>
+
+        {% if not is_edit %}
+        <div class="mt-3">
+          <button type="button" class="btn btn-outline-success btn-sm" id="btn-carry-forward">
+            <i class="bi bi-arrow-repeat"></i> Load from Previous Month
+          </button>
+          <small class="text-muted ms-2" id="carry-forward-status"></small>
+        </div>
+        {% endif %}
+
+        <hr class="my-4">
+        <h6 class="text-muted mb-3">Farm Details</h6>
+
+        <div class="row g-3">
+          <div class="col-md-3">
+            <label class="form-label">Area (Ha.)</label>
+            {{ form.area_ha }}
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Age of Palms (Years)</label>
+            {{ form.age_of_palms }}
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">No. of Hybridized Palms</label>
+            {{ form.num_hybridized_palms }}
+          </div>
+        </div>
+
+        <hr class="my-4">
+        <h6 class="text-muted mb-3">
+          <i class="bi bi-list-ul me-1"></i>Variety / Hybrid Crosses
+          <small class="text-body-secondary">(add one or more — enter seednuts count for this month)</small>
+        </h6>
+
+        <div id="variety-container">
+          <!-- Rows inserted by JS -->
+        </div>
+        <button type="button" class="btn btn-outline-primary btn-sm mt-2" onclick="addVarietyRow()">
+          <i class="bi bi-plus-circle"></i> Add Variety
+        </button>
+
+        <div class="row g-3 mt-3 align-items-center">
+          <div class="col-md-9 text-end">
+            <h6 class="mb-0 fw-bold">Total Seednuts for Month:</h6>
+          </div>
+          <div class="col-md-3">
+            <input type="text" id="total-seednuts-display" class="form-control fw-bold text-success bg-light" readonly
+              value="0">
+          </div>
+        </div>
+
+        <div class="row g-3 mt-2">
+          <div class="col-12">
+            <label class="form-label">Remarks</label>
+            {{ form.remarks }}
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-end gap-2 mt-4">
+          <a href="{% url 'field_data:harvest_list' %}" class="btn btn-outline-secondary">Cancel</a>
+          <button type="submit" class="btn btn-primary"><i class="bi bi-plus-circle"></i> {% if is_edit %} Update {% else %} Save {% endif %} Record</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  let varietyIndex = 0;
+
+  function addVarietyRow(variety, seednutsType, seednutsCount, remarks) {
+    variety = variety || '';
+    seednutsType = seednutsType || '';
+    seednutsCount = seednutsCount || 0;
+    remarks = remarks || '';
+
+    const container = document.getElementById('variety-container');
+    const row = document.createElement('div');
+    row.className = 'row g-2 mb-2 align-items-end variety-row';
+    row.innerHTML = `
+    <div class="col-md-3">
+      ${varietyIndex === 0 ? '<label class="form-label">Variety / Hybrid Crosses</label>' : ''}
+      <input type="text" name="var_variety[]" class="form-control" placeholder="e.g. Catigan Green Dwarf" value="${variety}">
+    </div>
+    <div class="col-md-2">
+      ${varietyIndex === 0 ? '<label class="form-label">Seednuts Produced</label>' : ''}
+      <select name="var_type[]" class="form-select">
+        <option value="OPV" ${seednutsType === 'OPV' ? 'selected' : ''}>OPV</option>
+        <option value="HYBRID" ${seednutsType === 'HYBRID' ? 'selected' : ''}>HYBRID</option>
+      </select>
+    </div>
+    <div class="col-md-2">
+      ${varietyIndex === 0 ? '<label class="form-label">Seednuts Count</label>' : ''}
+      <input type="number" name="var_count[]" class="form-control seednut-count-input" min="0" value="${seednutsCount}" oninput="calculateTotalSeednuts()">
+    </div>
+    <div class="col-md-3">
+      ${varietyIndex === 0 ? '<label class="form-label">Remarks</label>' : ''}
+      <input type="text" name="var_remarks[]" class="form-control" placeholder="Optional remarks" value="${remarks}">
+    </div>
+    <div class="col-md-2">
+      ${varietyIndex === 0 ? '<label class="form-label">&nbsp;</label>' : ''}
+      <button type="button" class="btn btn-outline-danger btn-sm w-100" onclick="removeVarietyRow(this)">
+        <i class="bi bi-x-lg"></i> Remove
+      </button>
+    </div>
+  `;
+    container.appendChild(row);
+    varietyIndex++;
+  }
+
+  function removeVarietyRow(btn) {
+    const container = document.getElementById('variety-container');
+    const rows = container.querySelectorAll('.variety-row');
+    if (rows.length <= 1) {
+      alert('You need at least one variety row.');
+      return;
+    }
+    btn.closest('.variety-row').remove();
+    rebuildLabels();
+    calculateTotalSeednuts();
+  }
+
+  function rebuildLabels() {
+    const rows = document.querySelectorAll('.variety-row');
+    rows.forEach((row, i) => {
+      const labels = row.querySelectorAll('label');
+      labels.forEach(l => l.remove());
+      if (i === 0) {
+        const cols = row.querySelectorAll('.col-md-3:first-child, .col-md-2:nth-child(2), .col-md-2:nth-child(3), .col-md-3:nth-child(4), .col-md-2:last-child');
+        const labelTexts = ['Variety / Hybrid Crosses', 'Seednuts Produced', 'Seednuts Count', 'Remarks', '\u00a0'];
+        cols.forEach((col, ci) => {
+          const lbl = document.createElement('label');
+          lbl.className = 'form-label';
+          lbl.innerHTML = labelTexts[ci] || '';
+          col.insertBefore(lbl, col.firstChild);
+        });
+      }
+    });
+  }
+
+  function calculateTotalSeednuts() {
+    const inputs = document.querySelectorAll('.seednut-count-input');
+    let total = 0;
+    inputs.forEach(input => {
+      const val = parseInt(input.value) || 0;
+      total += val;
+    });
+    const displayElement = document.getElementById('total-seednuts-display');
+    if (displayElement) {
+      displayElement.value = total;
+    }
+  }
+
+  // ----- Carry-forward: load previous month data -----
+  const cfBtn = document.getElementById('btn-carry-forward');
+  if (cfBtn) {
+    cfBtn.addEventListener('click', function () {
+      const statusEl = document.getElementById('carry-forward-status');
+      statusEl.textContent = 'Loading...';
+
+      let url = '{% url "field_data:harvest_carry_forward" %}';
+      const siteSelect = document.getElementById('id_field_site');
+      if (siteSelect && siteSelect.value) {
+        url += '?field_site=' + siteSelect.value;
+      }
+
+      fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+        .then(r => r.json())
+        .then(data => {
+          if (!data.found) {
+            statusEl.textContent = 'No previous records found for this site.';
+            statusEl.className = 'text-warning ms-2';
+            return;
+          }
+
+          const rmInput = document.getElementById('id_report_month');
+          const locInput = document.getElementById('id_location');
+          const fnInput = document.getElementById('id_farm_name');
+          const areaInput = document.getElementById('id_area_ha');
+          const ageInput = document.getElementById('id_age_of_palms');
+          const palmsInput = document.getElementById('id_num_hybridized_palms');
+
+          if (rmInput && data.next_month_date) rmInput.value = data.next_month_date;
+          if (locInput) locInput.value = data.location;
+          if (fnInput) fnInput.value = data.farm_name;
+          if (areaInput) areaInput.value = data.area_ha;
+          if (ageInput) ageInput.value = data.age_of_palms;
+          if (palmsInput) palmsInput.value = data.num_hybridized_palms;
+
+          const container = document.getElementById('variety-container');
+          container.innerHTML = '';
+          varietyIndex = 0;
+
+          if (data.varieties && data.varieties.length > 0) {
+            data.varieties.forEach(v => {
+              addVarietyRow(v.variety, v.seednuts_type, 0, '');
+            });
+          } else {
+            addVarietyRow();
+          }
+
+          statusEl.textContent = '\u2713 Loaded from previous record. Enter new seednuts counts.';
+          statusEl.className = 'text-success ms-2';
+        })
+        .catch(err => {
+          statusEl.textContent = 'Error loading data. Please try again.';
+          console.error(err);
+        });
+    });
+  }
+
+  // Start with existing rows (edit) or one empty row (create)
+  {% if existing_varieties %}
+  {% for v in existing_varieties %}
+  addVarietyRow("{{ v.0|escapejs }}", "{{ v.1|escapejs }}", {{ v.2|default:0 }}, "{{ v.3|escapejs }}");
+  {% endfor %}
+  {% else %}
+  addVarietyRow();
+  {% endif %}
+
+  // Calculate total on page load to handle existing rows
+  document.addEventListener('DOMContentLoaded', calculateTotalSeednuts);
+</script>
+{% endblock %}
